@@ -3,8 +3,13 @@
 import os
 import subprocess
 import shutil
+import argparse
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="KiwiOS Build Script")
+
+    parser.add_argument("--iso", action="store_true")
+    app_args = parser.parse_args()
     os.chdir(os.path.dirname(__file__))
 
     os.makedirs("out", exist_ok=True)
@@ -32,7 +37,7 @@ if __name__ == "__main__":
         (
             "clang",
             "-target",
-            "i686-elf",
+            "i386-elf",
             "-c",
             "src/kernel.cpp",
             "-o",
@@ -52,7 +57,7 @@ if __name__ == "__main__":
         cwd=os.getcwd(),
     )
 
-    print("Retrieving clang runtime dir...")
+    print("Retrieving clang runtime dir...", end=" ")
     runtime_dir = subprocess.run(
         ("clang", "--print-runtime-dir"), capture_output=True
     ).stdout.decode("utf-8")[:-1]
@@ -62,8 +67,8 @@ if __name__ == "__main__":
     subprocess.run(
         (
             "clang",
-            "--target=i686-pc-none-elf",
-            "-march=i686",
+            "--target=i386-pc-none-elf",
+            "-march=i386",
             "-T",
             "linker.ld",
             "-o",
@@ -73,6 +78,7 @@ if __name__ == "__main__":
             "-nostdlib",
             "boot.o",
             "kernel.o",
+            f"{runtime_dir}/libclang_rt.builtins-i386.a",
             "-fuse-ld=lld",
             "-static",
         ),
@@ -80,7 +86,7 @@ if __name__ == "__main__":
         cwd=f"{os.getcwd()}/out",
     )
 
-    print("Checking multiboot...")
+    print("Checking multiboot...", end=" ")
     if (
         subprocess.run(
             ("grub-file", "--is-x86-multiboot", "kiwios.bin"),
@@ -93,20 +99,23 @@ if __name__ == "__main__":
     else:
         assert False, "The binary is not multibootable"
 
-    print("Generating isodir & grub stuff...")
+    if app_args.iso:
+        print("Generating isodir & grub stuff...")
 
-    os.makedirs("out/isodir/", exist_ok=True)
-    
-    subprocess.run(("rm", "-rf", "out/isodir"), check=True, cwd=os.getcwd())
+        os.makedirs("out/isodir/", exist_ok=True)
 
-    os.makedirs("out/isodir/boot/grub", exist_ok=True)
-    
-    shutil.copy("out/kiwios.bin", "out/isodir/boot/kiwios.bin")
-    shutil.copy("src/grub/grub.cfg", "out/isodir/boot/grub/grub.cfg")
+        subprocess.run(("rm", "-rf", "out/isodir"), check=True, cwd=os.getcwd())
 
-    print("Building the ISO...")
-    subprocess.run(
-        ("grub-mkrescue", "-o", "kiwios.iso", "isodir"),
-        check=True,
-        cwd=f"{os.getcwd()}/out",
-    )
+        os.makedirs("out/isodir/boot/grub", exist_ok=True)
+
+        shutil.copy("out/kiwios.bin", "out/isodir/boot/kiwios.bin")
+        shutil.copy("src/grub/grub.cfg", "out/isodir/boot/grub/grub.cfg")
+
+        print("Building the ISO...")
+        subprocess.run(
+            ("grub-mkrescue", "-o", "kiwios.iso", "isodir"),
+            check=True,
+            cwd=f"{os.getcwd()}/out",
+        )
+
+    print("Complete!")
