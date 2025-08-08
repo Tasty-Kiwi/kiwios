@@ -8,8 +8,14 @@ import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="KiwiOS Build Script")
 
-    parser.add_argument("--iso", help="compile and generate an iso file using grub-mkrescue", action="store_true")
-    parser.add_argument("-q", "--qemu", help="compile and run qemu", action="store_true")
+    parser.add_argument(
+        "--iso",
+        help="compile and generate an iso file using grub-mkrescue",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-q", "--qemu", help="compile and run qemu", action="store_true"
+    )
     app_args = parser.parse_args()
     os.chdir(os.path.dirname(__file__))
 

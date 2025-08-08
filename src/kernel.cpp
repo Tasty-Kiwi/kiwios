@@ -94,6 +94,7 @@ void kernel_main(void) {
   /* Initialize terminal interface */
   terminal_initialize();
 
-  terminal_writestring("Hello, kernel World! This is KiwiOS!\nMultiline strings!\n\n\nVery cool!");
+  terminal_writestring("Hello, kernel World! This is KiwiOS!\nMultiline "
+                       "strings!\n\n\nVery cool!");
 }
 }

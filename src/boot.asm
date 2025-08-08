@@ -1,8 +1,8 @@
 ; Declare constants for the multiboot header.
-MBALIGN  equ  1 << 0            ; align loaded modules on page boundaries
-MEMINFO  equ  1 << 1            ; provide memory map
-MBFLAGS  equ  MBALIGN | MEMINFO ; this is the Multiboot 'flag' field
-MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
+MBALIGN  equ 1 << 0             ; align loaded modules on page boundaries
+MEMINFO  equ 1 << 1             ; provide memory map
+MBFLAGS  equ MBALIGN | MEMINFO  ; this is the Multiboot 'flag' field
+MAGIC    equ 0x1BADB002         ; 'magic number' lets bootloader find the header
 CHECKSUM equ -(MAGIC + MBFLAGS) ; checksum of above, to prove we are multiboot
                                 ; CHECKSUM + MAGIC + MBFLAGS should be Zero (0)
 
@@ -12,7 +12,7 @@ CHECKSUM equ -(MAGIC + MBFLAGS) ; checksum of above, to prove we are multiboot
 ; 32-bit boundary. The signature is in its own section so the header can be
 ; forced to be within the first 8 KiB of the kernel file.
 section .multiboot
-align 4
+align   4
 	dd MAGIC
 	dd MBFLAGS
 	dd CHECKSUM
@@ -28,9 +28,9 @@ align 4
 ; stack is properly aligned and failure to align the stack will result in
 ; undefined behavior.
 section .bss
-align 16
+align   16
 stack_bottom:
-resb 16384 ; 16 KiB is reserved for stack
+resb    16384                                 ; 16 KiB is reserved for stack
 stack_top:
 
 ; The linker script specifies _start as the entry point to the kernel and the
@@ -38,7 +38,7 @@ stack_top:
 ; doesn't make sense to return from this function as the bootloader is gone.
 ; Declare _start as a function symbol with the given symbol size.
 section .text
-global _start:function (_start.end - _start)
+global  _start:function (_start.end - _start)
 _start:
 	; The bootloader has loaded us into 32-bit protected mode on a x86
 	; machine. Interrupts are disabled. Paging is disabled. The processor
@@ -73,7 +73,7 @@ _start:
 	; preserved and the call is well defined.
         ; note, that if you are building on Windows, C functions may have "_" prefix in assembly: _kernel_main
 	extern kernel_main
-	call kernel_main
+	call   kernel_main
 
 	; If the system has nothing more to do, put the computer into an
 	; infinite loop. To do that:
@@ -86,6 +86,6 @@ _start:
 	; 3) Jump to the hlt instruction if it ever wakes up due to a
 	;    non-maskable interrupt occurring or due to system management mode.
 	cli
-.hang:	hlt
+.hang: hlt
 	jmp .hang
 .end:
